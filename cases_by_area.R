@@ -1,0 +1,66 @@
+## R ----
+
+setwd("/Users/graham/Dropbox/01_gitR/NHS_england_covid")
+## load packages ----
+library(tidyverse)
+library(lubridate)
+library(qcc)
+library(cronR)
+
+
+## import data ----
+
+covid_data <- as_tibble(read_csv("https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv"))
+
+#rename columns
+
+covid_gt <- rename(covid_data, area_name = `Area name`, area_code = `Area code`, area_type = `Area type`, date = `Specimen date`, 
+                   daily_confirmed = `Daily lab-confirmed cases`, reported =`Previously reported daily cases`, changed = `Change in daily cases`, 
+                   cumulative_confirmed = `Cumulative lab-confirmed cases`, prev_rep_cumulative = `Previously reported cumulative cases`, 
+                   delta_cumulative = `Change in cumulative cases`, 
+                   cumulative_rate = `Cumulative lab-confirmed cases rate`)
+
+
+## filtering by date ----
+
+date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-22"), by = "days")
+
+
+#add log2() columns
+#owid <- mutate(owid, log2tdpm = log2(total_deaths_per_million), log2tcpm = log2(total_cases_per_million))
+
+covid_upper <- filter(covid_gt, area_type == "Upper tier local authority")
+
+#local filter
+local_filter <- c("Calderdale", "Kirklees", "Blackburn with Darwen", "Leeds", "North Yorkshire", "Bradford", "Rochdale")
+
+local_filter <- c("Calderdale", "Kirklees", "North Yorkshire")
+
+covid_local <- filter(covid_upper, area_name %in% local_filter)
+
+
+## filtering by date ----
+
+date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-22"), by = "days")
+
+## date range filter ----
+date_range <- filter(covid_local,  date %in% date_v)
+#date_range <- mutate(date_range, Date = as.Date(date)) #then back to date format
+
+
+
+
+##plot new deaths or cases per million in the countries selected at date range filter ----
+ggplot(date_range) +
+  stat_smooth(mapping = aes(x = date, y = daily_confirmed, group = area_code, colour = area_name), span= 0.7, se = TRUE, show.legend = TRUE) +
+  geom_point(mapping =  aes(x = date, y = daily_confirmed, colour = area_name, shape =  area_name), show.legend = TRUE) +
+  theme_bw() +
+  scale_x_date(NULL,
+               breaks = scales::breaks_width("1 week"),
+               labels = scales::label_date_short()) +
+  #scale_y_continuous(name = "new cases", breaks = seq(0, 25, by = 5)) +
+  ylim(0, 30) +
+  ylab("new cases") +
+  labs (title = "Daily Covid-19 new cases in NHS Regions",
+        subtitle = "Source: (https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv)",
+        caption = "March 1st to June 22nd 2020 https://github.com/LordGenome/covid_stats/in_prep.R")
