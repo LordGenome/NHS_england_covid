@@ -23,7 +23,7 @@ covid_gt <- rename(covid_data, area_name = `Area name`, area_code = `Area code`,
 
 ## filtering by date ----
 
-date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-22"), by = "days")
+date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-25"), by = "days")
 
 
 #add log2() columns
@@ -36,18 +36,18 @@ local_filter <- c("Calderdale", "Kirklees", "Blackburn with Darwen", "Leeds", "N
 
 local_filter <- c("Calderdale", "Kirklees", "North Yorkshire")
 
+local_filter <- c("Kirklees", "Leeds", "North Yorkshire", "Bradford", "Rochdale")
+
 covid_local <- filter(covid_upper, area_name %in% local_filter)
 
 
 ## filtering by date ----
 
-date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-22"), by = "days")
+date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-25"), by = "days")
 
 ## date range filter ----
 date_range <- filter(covid_local,  date %in% date_v)
 #date_range <- mutate(date_range, Date = as.Date(date)) #then back to date format
-
-
 
 
 ##plot new deaths or cases per million in the countries selected at date range filter ----
@@ -63,4 +63,6 @@ ggplot(date_range) +
   ylab("new cases") +
   labs (title = "Daily Covid-19 new cases in NHS Regions",
         subtitle = "Source: (https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv)",
-        caption = "March 1st to June 22nd 2020 https://github.com/LordGenome/covid_stats/in_prep.R")
+        caption = "March 1st to June 25th 2020 https://github.com/LordGenome/NHS_england_covid")
+
+## scan all upper tiers for spikes then
