@@ -65,4 +65,4 @@ ggplot(date_range) +
         subtitle = "Source: (https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv)",
         caption = "March 1st to June 25th 2020 https://github.com/LordGenome/NHS_england_covid")
 
-## scan all upper tiers for spikes then
+## scan all upper tiers for spikes then identify any cosum deviants
