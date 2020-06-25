@@ -20,6 +20,13 @@ covid_gt <- rename(covid_data, area_name = `Area name`, area_code = `Area code`,
                    delta_cumulative = `Change in cumulative cases`, 
                    cumulative_rate = `Cumulative lab-confirmed cases rate`)
 
+covid_upper <- filter(covid_gt, area_type == "Upper tier local authority")
+
+
+length(unique(covid_upper$area_name))
+
+
+utla_area_names <- unique(select(covid_upper, area_name))
 
 ## filtering by date ----
 
@@ -29,9 +36,8 @@ date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-25"), by = "days")
 #add log2() columns
 #owid <- mutate(owid, log2tdpm = log2(total_deaths_per_million), log2tcpm = log2(total_cases_per_million))
 
-covid_upper <- filter(covid_gt, area_type == "Upper tier local authority")
 
-#local filter
+#local filters
 local_filter <- c("Calderdale", "Kirklees", "Blackburn with Darwen", "Leeds", "North Yorkshire", "Bradford", "Rochdale")
 
 local_filter <- c("Calderdale", "Kirklees", "North Yorkshire")
@@ -43,7 +49,7 @@ covid_local <- filter(covid_upper, area_name %in% local_filter)
 
 ## filtering by date ----
 
-date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-25"), by = "days")
+date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-26"), by = "days")
 
 ## date range filter ----
 date_range <- filter(covid_local,  date %in% date_v)
@@ -61,8 +67,8 @@ ggplot(date_range) +
   #scale_y_continuous(name = "new cases", breaks = seq(0, 25, by = 5)) +
   ylim(0, 30) +
   ylab("new cases") +
-  labs (title = "Daily Covid-19 new cases in NHS Regions",
+  labs (title = "Daily Covid-19 new cases in UTLAs",
         subtitle = "Source: (https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv)",
-        caption = "March 1st to June 25th 2020 https://github.com/LordGenome/NHS_england_covid")
+        caption = "March 1st to June 26th 2020 https://github.com/LordGenome/NHS_england_covid")
 
-## scan all upper tiers for spikes then
+## scan all upper tiers for spikes then identify any cosum deviants
