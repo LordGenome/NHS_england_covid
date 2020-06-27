@@ -22,15 +22,20 @@ covid_gt <- rename(covid_data, area_name = `Area name`, area_code = `Area code`,
 
 covid_upper <- filter(covid_gt, area_type == "Upper tier local authority")
 
-
 length(unique(covid_upper$area_name))
-
 
 utla_area_names <- unique(select(covid_upper, area_name))
 
+covid_regions <- filter(covid_gt, area_type == "Region")
+
+length(unique(covid_regions$area_name))
+
+region_names <- unique(select(covid_regions, area_name))
+
+
 ## filtering by date ----
 
-date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-25"), by = "days")
+date_v <- seq(as.Date("2020-06-01"), as.Date("2020-06-27"), by = "days")
 
 
 #add log2() columns
@@ -49,26 +54,46 @@ covid_local <- filter(covid_upper, area_name %in% local_filter)
 
 ## filtering by date ----
 
-date_v <- seq(as.Date("2020-03-01"), as.Date("2020-06-26"), by = "days")
+date_v <- seq(as.Date("2020-01-01"), as.Date("2020-06-27"), by = "days")
 
 ## date range filter ----
 date_range <- filter(covid_local,  date %in% date_v)
+
 #date_range <- mutate(date_range, Date = as.Date(date)) #then back to date format
 
 
 ##plot new deaths or cases per million in the countries selected at date range filter ----
 ggplot(date_range) +
-  stat_smooth(mapping = aes(x = date, y = daily_confirmed, group = area_code, colour = area_name), span= 0.7, se = TRUE, show.legend = TRUE) +
+  stat_smooth(mapping = aes(x = date, y = daily_confirmed, group = area_code, colour = area_name), span= 0.7, se = FALSE, show.legend = TRUE) +
   geom_point(mapping =  aes(x = date, y = daily_confirmed, colour = area_name, shape =  area_name), show.legend = TRUE) +
   theme_bw() +
   scale_x_date(NULL,
                breaks = scales::breaks_width("1 week"),
                labels = scales::label_date_short()) +
   #scale_y_continuous(name = "new cases", breaks = seq(0, 25, by = 5)) +
-  ylim(0, 30) +
+  ylim(0, 10) +
   ylab("new cases") +
   labs (title = "Daily Covid-19 new cases in UTLAs",
         subtitle = "Source: (https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv)",
-        caption = "March 1st to June 26th 2020 https://github.com/LordGenome/NHS_england_covid")
+        caption = "March 1st to June 27th 2020 https://github.com/LordGenome/NHS_england_covid")
 
 ## scan all upper tiers for spikes then identify any cosum deviants
+
+
+## Regions ----
+date_range <- filter(covid_regions,  date %in% date_v)
+
+ggplot(date_range) +
+  stat_smooth(mapping = aes(x = date, y = daily_confirmed, group = area_code, colour = area_name), span= 0.7, se = FALSE, show.legend = TRUE) +
+  geom_point(mapping =  aes(x = date, y = daily_confirmed, colour = area_name, shape =  area_name), show.legend = TRUE) +
+  theme_bw() +
+  scale_x_date(NULL,
+               breaks = scales::breaks_width("1 week"),
+               labels = scales::label_date_short()) +
+  #scale_y_continuous(name = "new cases", breaks = seq(0, 25, by = 5)) +
+  ylim(0, 300) +
+  ylab("new cases") +
+  labs (title = "Daily Covid-19 new cases in the 9 NHSE Regions",
+        subtitle = "Source: (https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv)",
+        caption = "March 1st to June 27th 2020 https://github.com/LordGenome/NHS_england_covid")
+
