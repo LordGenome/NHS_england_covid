@@ -12,28 +12,34 @@ library(cronR)
 
 covid_data <- as_tibble(read_csv("https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv"))
 
-covid_deaths <- as_tibble(read_csv("https://coronavirus.data.gov.uk/downloads/csv/coronavirus-deaths_latest.csv"))
+#covid_deaths <- as_tibble(read_csv("https://coronavirus.data.gov.uk/downloads/csv/coronavirus-deaths_latest.csv"))
 
 #rename columns
 
+#covid_gt <- rename(covid_data, area_name = `Area name`, area_code = `Area code`, area_type = `Area type`, date = `Specimen date`, 
+#                   daily_confirmed = `Daily lab-confirmed cases`, reported =`Previously reported daily cases`, changed = `Change in daily cases`, 
+#                   cumulative_confirmed = `Cumulative lab-confirmed cases`, prev_rep_cumulative = `Previously reported cumulative cases`, 
+#                   delta_cumulative = `Change in cumulative cases`, 
+#                   cumulative_rate = `Cumulative lab-confirmed cases rate`)
+
 covid_gt <- rename(covid_data, area_name = `Area name`, area_code = `Area code`, area_type = `Area type`, date = `Specimen date`, 
-                   daily_confirmed = `Daily lab-confirmed cases`, reported =`Previously reported daily cases`, changed = `Change in daily cases`, 
-                   cumulative_confirmed = `Cumulative lab-confirmed cases`, prev_rep_cumulative = `Previously reported cumulative cases`, 
-                   delta_cumulative = `Change in cumulative cases`, 
+                   daily_confirmed = `Daily lab-confirmed cases`, cumulative_confirmed = `Cumulative lab-confirmed cases`,
                    cumulative_rate = `Cumulative lab-confirmed cases rate`)
 
 covid_deaths_gt <- rename(covid_deaths, area_name = `Area name`, area_code = `Area code`, area_type = `Area type`, 
                           date = `Reporting date`, new_deaths = `Daily change in deaths`, cumulative_deaths = `Cumulative deaths` )
 
-covid_upper <- filter(covid_gt, area_type == "Upper tier local authority")
+covid_upper <- filter(covid_gt, area_type == "utla")
 
-covid_lower <- filter(covid_gt, area_type == "Lower tier local authority")
-
-
+covid_lower <- filter(covid_gt, area_type == "ltla")
 
 utla_area_names <- unique(select(covid_upper, area_name))
 
+ltla_area_names <- unique(select(covid_lower, area_name))
+
 covid_regions <- filter(covid_gt, area_type == "Region")
+
+covid_nations_deaths <- filter(covid_deaths_gt, area_type == "Nation")
 
 length(unique(covid_regions$area_name))
 
@@ -72,9 +78,11 @@ label_dates <- paste0(label_start_date," to ",label_sys_date, " https://github.c
 
 #local_filter <- c("Calderdale", "Kirklees", "North Yorkshire")
 
-local_filter <- c("Kirklees", "Leeds", "North Yorkshire", "Bradford", "Rochdale", "Leicester")
+local_filter <- c("North Yorkshire", "Rochdale", "Bolton", "Kent")
 
 covid_local <- filter(covid_upper, area_name %in% local_filter)
+
+#covid_local_deaths <- filter(covid_upper_deaths, area_name %in% local_filter)
 
 ## filtering by date ----
 
@@ -87,9 +95,10 @@ date_range <- filter(covid_local,  date %in% date_v)
 
 image_name <- paste("images/utlas_",sys_date, ".png", sep = "")
 
-##plot new deaths or cases per million in the countries selected at date range filter ----
+##plot new cases selected at date range filter ----
 ggplot(date_range) +
-  stat_smooth(mapping = aes(x = date, y = daily_confirmed, group = area_code, colour = area_name), span= 0.7, se = FALSE, show.legend = TRUE) +
+  stat_smooth(mapping = aes(x = date, y = daily_confirmed, group = area_code, colour = area_name), span= 0.2, se = TRUE, show.legend = TRUE) +
+  #stat_smooth(method = "lm", formula = y ~ poly(x, 3), size = 1, aes(x = date, y = daily_confirmed, group = area_code, colour = area_name), se = TRUE, show.legend = TRUE) +
   #geom_jitter(mapping =  aes(x = date, y = daily_confirmed, colour = area_name, shape =  area_name), show.legend = TRUE) +
   theme_bw() +
   scale_x_date(NULL,
@@ -103,7 +112,25 @@ ggplot(date_range) +
         caption = label_dates) +
   ggsave(image_name)
 
-## scan all upper tiers for spikes then identify any cosum deviants
+
+
+##formulae ----
+
+
+#lfit <-  line(y ~ poly(x, 3) x = date, y = daily_confirmed))
+
+
+
+lfit <- line(owid_one_date$life_expectancy, log2(owid_one_date$total_cases_per_million))
+summary(lfit)
+
+summary(lfit) #works
+anova(lfit) #doesn't work
+coefficients(lfit) #gives c and m from y=mx+c
+effects(fit) #doesn't work
+fitted.values(lfit) #table for fitted values
+residuals(lfit) #another table
+formula(lfit) #error in formula.default(fit) : invalid formula
 
 
 ## Regions ----
@@ -114,7 +141,7 @@ regions <- filter(covid_regions,  date %in% date_v)
 image_name <- paste("images/regions_",sys_date, ".png", sep = "")
 
 ggplot(regions) +
-  stat_smooth(mapping = aes(x = date, y = daily_confirmed, group = area_code, colour = area_name), span= 0.7, se = FALSE, show.legend = TRUE) +
+  stat_smooth(mapping = aes(x = date, y = daily_confirmed, group = area_code, colour = area_name), span= 0.7, se = 0, show.legend = TRUE) +
   #geom_point(mapping =  aes(x = date, y = daily_confirmed, colour = area_name, shape =  area_name), show.legend = TRUE) +
   theme_bw() +
   scale_x_date(NULL,
